@@ -3,40 +3,43 @@ function checkCashRegister(price, cash, cid) {
   var change=[];
   var denomination = [0.01, 0.05, 0.1, 0.25, 1, 5, 10, 20, 100];
   // Here is your change, ma'am.
-  var totalCashInDrawer =  cid.reduce(function(prev, cur) {
-    return prev+cur;
-  });
+  var totalCashInDrawer =0;
+  for(var i=0; i<cid.length; i++)
+    totalCashInDrawer +=cid[i][1];
+  var moneyLeft = cash - price ;
   if (totalCashInDrawer < cash-price) {
     return "Insufficient Funds";
   } else {
-    var moneyLeft = cash - price ;
+    
     var res = denomination.filter(function(a) {
       return (moneyLeft > a)?true:false;
     });
     var pos = res.length-1;
     while(pos >= 0) {
-      if (moneyLeft > res[pos]) {
-        change = change.push([cid[pos][0], moneyLeft/res[pos]]);
-        moneyLeft %= res[pos];
+      if (moneyLeft > res[pos] && cid[pos][1]!=0) {
+        if (Math.floor(moneyLeft/res[pos])*res[pos] < cid[pos][1]) {
+          change.push([cid[pos][0], parseFloat(Math.floor(moneyLeft/res[pos])*res[pos]).toFixed(2)]); 
+          moneyLeft %= res[pos];
+          moneyLeft = parseFloat(moneyLeft).toFixed(2);
+          cid[pos][1] -= Math.floor(moneyLeft/res[pos])*res[pos];
+        }
+          
+        else {
+          change.push([cid[pos][0], parseFloat(cid[pos][1]).toFixed(2)]);
+          moneyLeft -= parseFloat(cid[pos][1]).toFixed(2);
+          cid[pos][1] = 0;
+        }
       }
       pos--;
     }
+    if (moneyLeft > 0 && pos < 0) {
+      return "Insufficient Funds";
+    }
   }
-  if (totalCashInDrawer === cash-price)
+  if (moneyLeft == 0)
     return "Closed";
   else
   return change;
 }
 
-// Example cash-in-drawer array:
-// [["PENNY", 1.01],
-// ["NICKEL", 2.05],
-// ["DIME", 3.10],
-// ["QUARTER", 4.25],
-// ["ONE", 90.00],
-// ["FIVE", 55.00],
-// ["TEN", 20.00],
-// ["TWENTY", 60.00],
-// ["ONE HUNDRED", 100.00]]
-
-checkCashRegister(19.50, 20.00, [["PENNY", 1.01], ["NICKEL", 2.05], ["DIME", 3.10], ["QUARTER", 4.25], ["ONE", 90.00], ["FIVE", 55.00], ["TEN", 20.00], ["TWENTY", 60.00], ["ONE HUNDRED", 100.00]]);
+checkCashRegister(19.50, 20.00, [["PENNY", 0.50], ["NICKEL", 0], ["DIME", 0], ["QUARTER", 0], ["ONE", 0], ["FIVE", 0], ["TEN", 0], ["TWENTY", 0], ["ONE HUNDRED", 0]]);
