@@ -1,0 +1,42 @@
+
+function updateInventory(arr1, arr2) {
+    // All inventory must be accounted for or you're fired!
+  
+  arr2.map(function(invObj, index){
+    var res = isPresent(arr1, invObj);
+    if (res != null) {
+      arr1[res][0] += arr2[index][0];
+    } else {
+      arr1.push(invObj);
+    }
+  });
+  arr1=arr1.sort(function(a, b) {
+    return a[1]>b[1];
+  });
+    return arr1;
+}
+                  
+function isPresent(ar1, elem) {
+    for(var i=0; i<ar1.length; i++) {
+      if (ar1[i][1] === elem[1])
+        return i;
+    }
+    return null;
+  }
+
+// Example inventory lists
+var curInv = [
+    [21, "Bowling Ball"],
+    [2, "Dirty Sock"],
+    [1, "Hair Pin"],
+    [5, "Microphone"]
+];
+
+var newInv = [
+    [2, "Hair Pin"],
+    [3, "Half-Eaten Apple"],
+    [67, "Bowling Ball"],
+    [7, "Toothpaste"]
+];
+
+updateInventory(curInv, newInv);
