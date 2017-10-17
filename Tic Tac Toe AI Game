@@ -1,1 +1,298 @@
+// Make sure to import Bootstrap and Jquery in your implementation as well as the fonts you require.
 
+//------------------------------ JS FILE ---------------------------------
+
+var alt=1;
+var grid=[['','',''],['','',''],['','','']];
+var moveGrid = [['','',''],['','',''],['','','']];
+var player='X',opponent='O';
+
+function renderGame() {
+        // console.log('initial state', grid);
+        renderDefault();
+        var winningGrid = [];
+        $("table td").on("click",function(){
+          var str=$(this).attr('id');
+          var x=Number(str.charAt(0));
+          var y=Number(str.charAt(1));
+          
+          if(grid[x][y]==='')
+          {
+            // If the slot was empty before clicking
+            grid[x][y] = (alt == 1) ? 'X' : 'O';
+            updateHtml(x,y);
+            alt*=-1;
+            winningGrid = hasPlayerWon(grid); 
+            if (winningGrid.length) {
+              highlightWinGrid(winningGrid);
+            } else {
+              var cpuMoves = cpuMakesMove(grid);
+              winningGrid = hasPlayerWon(grid); 
+            if (winningGrid.length) {
+              highlightWinGrid(winningGrid);
+            }
+              updateHtml(cpuMoves[0], cpuMoves[1]);
+              alt*=-1;
+            }
+          }
+          // hasPlayerWon(grid); //Checking if somebody won
+          // isFull(grid);
+      });
+  }
+
+  function updateHtml(x,y){
+    $("#"+x+y).html(grid[x][y]);
+  }
+
+  function isFull(arr)
+  {     
+    var flag=0;
+      for(var a=0;a<3;a++) {
+        for(var b=0;b<3;b++) {
+            if(arr[a][b] == '') {
+              flag=1;
+              break;
+            }
+          }
+        if(flag == 1)
+          break;
+      }
+    if(flag==0) {
+      return true;
+    }
+    else return false;
+  }
+
+  function initializeDefault()
+  {
+    grid=[['','',''],['','',''],['','','']];
+    $("table tr td").html('<a href="#"></a>');
+    $("table td").css("backgroundColor","lightgrey");
+    $("table td").css("color","#5d6d7e");  
+  }
+
+  function renderDefault() {
+    for(var a=0; a<grid.length; a++)
+      for(var b=0; b<grid.length; b++)
+      updateHtml(a,b);
+  }
+
+  function highlightWinGrid(arr) {
+    arr.map((elem) => {
+      $("#"+elem[0]+elem[1]).css("backgroundColor","#e74c3c");
+      $("#"+elem[0]+elem[1]).css("color","white");
+    });
+
+    setTimeout(initializeDefault,5000);
+  }
+
+  function hasPlayerWon(arr) {
+    // Checking rows
+    for (var a=0; a<arr.length; a++) {
+      if(arr[a][0]===arr[a][1] && arr[a][1]===arr[a][2] && arr[a][0]!='') {
+        // If a particular row has the winning move
+        return([[a, 0], [a, 1], [a,2]]);
+      }
+
+      if(arr[0][a]===arr[1][a] && arr[1][a]===arr[2][a] && arr[0][a]!='') {
+        return([[0, a], [1, a], [2,a]]);
+      }
+    }
+    // If a particular diagonal has the winning move
+    if(arr[0][0] === arr[1][1] && arr[1][1] === arr[2][2] && arr[0][0] != '') {
+      return([[0, 0], [1, 1], [2,2]]);
+    }
+    if(arr[0][2] === arr[1][1] && arr[1][1] === arr[2][0] && arr[0][2] != '') {
+      return([[0, 2], [1, 1], [2,0]]);
+    }
+    return [];
+  }
+  
+  function cpuMakesMove(state) {
+    var best = -1000, pos = [];
+    for (var a=0; a<3; a++) {
+      for(var b=0; b<3; b++) {
+        if (state[a][b] == '') {
+          state[a][b] = 'O';
+          moveGrid[a][b] = findOptimalMove(state, 1, 0);
+          if (moveGrid[a][b] > best) {
+            best = moveGrid[a][b];
+            pos = [a, b];
+          }
+          state[a][b] = '';
+        }
+      }
+    }
+    // console.log('moveGrid', moveGrid);
+    grid[pos[0]][pos[1]] = 'O';
+    return pos;
+  }
+  
+  function isCellEmpty(elem) {
+    return elem == ''?true:false;
+  }
+  
+  //recursive function that returns the grid with all the possible results for every move
+  function findOptimalMove(localState, isCpu, depth) {
+    var best = (isCpu == 1) ? -1000 : 1000;
+     // console.log("current State and depth and isCpu", localState, depth, isCpu);
+    if (hasPlayerWon(localState).length) {
+        // console.log("value returned will be ", (isCpu == 1) ? 10 - depth : -10 - depth);
+        return (isCpu == 1) ? 10 - depth : -10 - depth;
+      }
+    else if (isFull(localState))
+    {
+      // console.log('grid full', isCpu, depth);
+      return (isCpu == 1) ? 0 - depth : 0 + depth;
+    }
+    
+    // moves = fetchPossibleMoves(localState);
+    // console.log("possible moves", moves);
+    for(var a=0; a<3; a++) {
+      for(var b=0; b<3; b++) {
+        
+      if(localState[a][b] == '')
+        localState[a][b] = (isCpu == 1) ? 'X' : 'O';
+      else continue;
+        
+        if (isCpu == 1) {
+          best = Math.max(best, findOptimalMove(localState, isCpu * -1, depth + 1));
+          // console.log('max' , best);
+        }
+        
+        else {
+          best = Math.min(best, findOptimalMove(localState, isCpu * -1, depth + 1));
+          // console.log('min', best);
+        }
+          
+        localState[a][b] = '';
+      }
+    }
+    // console.log('best', best);
+    return best;
+  }
+
+$(document).ready(function(){
+  renderGame();
+  
+});
+
+-------------------------------------- JS FILE ENDS -------------------------------------------
+
+
+
+-------------------------------------- HTML CODE ----------------------------------------------
+<link href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah|Josefin+Sans|Mogra" rel="stylesheet"> 
+<div class="header">
+  <h1> Tic Tac Toe </h1>
+  <h4> 2 Players </h4>
+</div>
+
+<div class="container">
+  <div class="user player1">
+        Player 1's turn
+      </div>
+      <div class="user player2">
+        Player 2's turn
+      </div>
+  <div class="board">
+    <div class="grid">      
+      <table>
+        <tr>
+          <td id="00"><a href="#"></a></td>
+          <td id="01"><a href="#"></a></td>
+          <td id="02"><a href="#"></a></td>
+        </tr>
+        <tr>
+          <td id="10"><a href="#"></a></td>
+          <td id="11"><a href="#"></a></td>
+          <td id="12"><a href="#"></a></td>
+        </tr>
+        <tr>
+          <td id="20"><a href="#"></a></td>
+          <td id="21"><a href="#"></a></td>
+          <td id="22"><a href="#"></a></td>
+        </tr>
+        
+      </table>
+    </div>
+    
+  </div>
+
+</div>
+
+----------------------------------- HTML CODE ENDS ----------------------------------------
+
+
+
+----------------------------------- CSS DESIGN --------------------------------------------
+
+table td{
+  border:none;
+  padding:0px;
+  font-size:30px;
+  width:100px;
+  height:100px;
+  text-align:center;
+  background-color:lightgrey;
+  border:2px solid white;
+  color:   #5d6d7e ;
+}
+table td hr{
+  height:300px;
+}
+table td a{
+  display:block;
+  width:100%;
+  height:100%;
+  padding:0px;
+  margin:0px;
+}
+table td:hover{
+  background-color:pink;
+}
+table{
+  margin:auto;
+}
+.header{
+  margin:50px auto;
+  text-align:center;
+}
+h1{
+  font-family:"Josefin Sans";
+}
+.user{
+  width:150px;
+  height:50px;
+  background-color: #76d7c4 ;
+  font-size:20px;
+  margin:auto;
+  position:absolute;
+  left:0px;
+  right:150px;
+  top:142px;
+  padding:10px;
+  z-index:0;
+  transtion:position 2s ease;
+}
+
+.player2{
+  top:389px;
+  right:0px;
+  left:150px;
+  background-color: #5dade2 ;
+}
+.board{
+  position:relative;
+  z-index:1;
+}
+h4{
+  position:absolute;
+  left:0px;
+  right:320px;
+  top:375px;
+  transform:rotate(-90deg);
+  color:darkgrey;
+}
+
+------------------------------------------ CSS DEISGN ENDS ----------------------------------------
